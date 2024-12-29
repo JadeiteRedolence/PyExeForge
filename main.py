@@ -59,14 +59,13 @@ def get_custom_names(base_name):
     print("\nPlease enter custom names (press Enter to use defaults):")
     
     # Get custom output filename
-    custom_output = input(f"Output filename (default: {BASE_NAME}_v{VERSION}_Build{BUILD_DATE}): ").strip()
-    output_name = custom_output if custom_output else f"{BASE_NAME}_v{VERSION}_Build{BUILD_DATE}"
+    default_filename = f'{BASE_NAME}_v{VERSION}_Build{BUILD_DATE}'
+    pycp(default_filename)
+    custom_output = input(f"Output filename (default: {default_filename}): ").strip()
+    output_name = custom_output if custom_output else f"{default_filename}"
     
     # Get custom version filename
-    default_version = f'version_{BASE_NAME}.txt'
-    pycp(default_version)
-    custom_version = input(f"Version info filename (default: {default_version}): ").strip()
-    version_name = custom_version if custom_version else default_version
+    version_name = f'version_{BASE_NAME}.txt'
 
     return output_name, version_name
 
@@ -106,6 +105,8 @@ VSVersionInfo(
     return version_name
 
 def convert_to_exe(py_file):
+    options = ''
+
     # Get base filename without extension
     base_name = spt(bn(py_file))[0]
     
@@ -114,11 +115,15 @@ def convert_to_exe(py_file):
     
     # Generate version info file
     version_file = generate_version_info(output_name, version_name)
-    
+
+    gui_choice = input('Do you want to use GUI mode? (y/n): ')
+    if gui_choice.lower() == 'n':
+        options += ' --noconsole '
+
     # Build command with output to constant directory
     command = (
         f'pyinstaller '
-        f'-F --uac-admin --uac-uiaccess --log-level DEBUG '
+        f'-F --uac-admin --uac-uiaccess --log-level DEBUG {options} '
         f'--version-file=\'{version_file}\' '
         f'--name \'{output_name}\' '
         f'--distpath . '

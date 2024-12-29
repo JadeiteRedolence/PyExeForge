@@ -1,6 +1,7 @@
 """
-Welcome to PyExeForge - Python Program Packaging Tool!
+Welcome to PyWin32Exec - Python Program Packaging Tool!
 
+Program Name: PyWin32Exec_v1.0.0_Build2024.12.28
 Author: Volkath@amazoncloud
 Version: 1.0.0
 Build Date: 2024.12.28
@@ -12,13 +13,20 @@ This is an easy-to-use Python program packaging tool. It can:
 ✓ Add UAC admin privileges
 ✓ Generate single-file programs
 """
+package = 'PyWin32Exec_v1.0.0_Build2024.12.28'
+print(package.center(100,'*'))
 
-from os import system as cmd, chdir, getcwd, popen as rcmd, rename, remove, _exit as quit, makedirs
+from os import system as cmd, chdir, getcwd, popen as rcmd, rename, remove, _exit as quit, makedirs, environ
 from os.path import split as sp, splitext as spt, basename as bn, exists, expanduser
 from tkinter.filedialog import askopenfilename
 from datetime import datetime
 import tkinter as tk
 from time import sleep
+from pyperclip import copy as pycp
+
+#environ
+current_user = environ['USERNAME']
+current_computername = environ['COMPUTERNAME']
 
 # Get user input for version info
 print("\nPlease enter program information:")
@@ -42,7 +50,7 @@ def pws(s):
 
 def get_py_file():
     return askopenfilename(
-        title='Select Python File to Convert',
+        title=f'Select Python File to Convert ({package})',
         filetypes=[('Python Files', '*.py')],
         initialdir=INIT_DIR
     )
@@ -55,9 +63,11 @@ def get_custom_names(base_name):
     output_name = custom_output if custom_output else f"{BASE_NAME}_v{VERSION}_Build{BUILD_DATE}"
     
     # Get custom version filename
-    custom_version = input(f"Version info filename (default: version_{BASE_NAME}.txt): ").strip()
-    version_name = custom_version if custom_version else f"version_{BASE_NAME}.txt"
-    
+    default_version = f'version_{BASE_NAME}.txt'
+    pycp(default_version)
+    custom_version = input(f"Version info filename (default: {default_version}): ").strip()
+    version_name = custom_version if custom_version else default_version
+
     return output_name, version_name
 
 def generate_version_info(output_name, version_name):
@@ -81,7 +91,7 @@ VSVersionInfo(
          StringStruct(u'FileDescription', u'{output_name} Application'),
          StringStruct(u'FileVersion', u'{VERSION}'),
          StringStruct(u'InternalName', u'{output_name}'),
-         StringStruct(u'LegalCopyright', u'© 2025 Volkath@amazoncloud. All rights reserved.'),
+         StringStruct(u'LegalCopyright', u'©2025 Gitee Volkath@amazoncloud. All rights reserved.'),
          StringStruct(u'OriginalFilename', u'{output_name}.exe'),
          StringStruct(u'ProductName', u'{output_name}'),
          StringStruct(u'ProductVersion', u'{VERSION}'),
@@ -108,7 +118,7 @@ def convert_to_exe(py_file):
     # Build command with output to constant directory
     command = (
         f'pyinstaller '
-        f'-F --uac-admin --uac-uiaccess '
+        f'-F --uac-admin --uac-uiaccess --log-level DEBUG '
         f'--version-file=\'{version_file}\' '
         f'--name \'{output_name}\' '
         f'--distpath . '
@@ -131,7 +141,20 @@ def main():
     else:
         print('\nNo file selected.')
     pws('Start-Process .')
-    quit(0)
+    while True:
+        environ['PYTHONWARNINGS'] = 'ignore'
+        current_workdir = getcwd()[0].upper() + getcwd()[1:]
+        shell = input(f'[{current_user}@{current_computername} {current_workdir} #]').replace('\\', '/')
+        if shell == 'exit' or shell == 'quit':
+            quit(0)
+        elif 'cd' in shell:
+            getpath = ' '.join(shell.split(' ')[1:])
+            if exists(getpath):
+                chdir(getpath)
+            else:
+                print('This path does not exist.')
+                continue
+        pws(shell)
 
 if __name__ == '__main__':
     main()
